@@ -1,0 +1,96 @@
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:palette_generator/palette_generator.dart';
+import 'package:wallfreev/utils/debouncer.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
+
+class CategoriesPage extends StatefulWidget {
+  const CategoriesPage({Key? key}) : super(key: key);
+
+  @override
+  _CategoriesPageState createState() => _CategoriesPageState();
+}
+
+class _CategoriesPageState extends State<CategoriesPage> {
+  bool showBottomBar = true;
+  Color targetColor = Colors.yellow;
+
+  final images = [];
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    targetColor = Colors.grey;
+
+    final colorWhited =
+        Color.alphaBlend(Colors.white.withAlpha(190), targetColor);
+
+    final blacked = Color.alphaBlend(Colors.black.withAlpha(210), targetColor);
+
+    return CustomScrollView(slivers: [
+      SliverAppBar(
+        shadowColor: targetColor,
+        flexibleSpace: FlexibleSpaceBar(
+          title: Text(
+            "Categories",
+            style: TextStyle(
+                fontSize: 27, fontWeight: FontWeight.w400, color: colorWhited),
+          ),
+          collapseMode: CollapseMode.pin,
+          titlePadding: const EdgeInsets.only(left: 20, bottom: 12),
+          background: Container(
+            margin: const EdgeInsets.only(left: 180, bottom: 80),
+            child: Icon(Icons.category,
+                size: 210, color: colorWhited.withOpacity(.1)),
+          ),
+        ),
+        expandedHeight: 230,
+        pinned: true,
+        backgroundColor: blacked,
+        elevation: 0,
+      ),
+      SliverPadding(
+        padding: const EdgeInsets.all(12.0),
+        sliver: SliverList(
+          delegate: SliverChildListDelegate.fixed([
+            ListTile(
+              onTap: () {},
+              title: Text(
+                "Team Pixel",
+                style: TextStyle(fontSize: 22, color: colorWhited),
+              ),
+              subtitle: Text(
+                "43 wallpapers",
+                style:
+                    TextStyle(fontSize: 14, color: colorWhited.withOpacity(.7)),
+              ),
+            ),
+            ListTile(
+              title: Text(
+                "Shapes Theory",
+                style: TextStyle(fontSize: 22, color: colorWhited),
+              ),
+              subtitle: Text(
+                "11 wallpapers",
+                style:
+                    TextStyle(fontSize: 14, color: colorWhited.withOpacity(.7)),
+              ),
+            ),
+          ]),
+        ),
+      ),
+    ]);
+  }
+}
