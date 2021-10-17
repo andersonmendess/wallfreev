@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:wallfreev/controllers/app_controller.dart';
 import 'package:wallfreev/pages/categories_page.dart';
 import 'package:wallfreev/pages/home_page.dart';
 import 'package:flutter/services.dart';
+import 'package:wallfreev/utils/theme_utils.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +23,14 @@ void main() {
     DeviceOrientation.portraitDown,
   ]);
 
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AppController()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -29,16 +39,24 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    Color targetColor = Colors.pink;
-
-    final colorWhited =
-        Color.alphaBlend(Colors.white.withAlpha(190), targetColor);
-
-    final blacked = Color.alphaBlend(Colors.black.withAlpha(210), targetColor);
+    Color targetColor = context.watch<AppController>().primaryColor;
 
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData.dark().copyWith(),
+      theme: ThemeData.dark().copyWith(
+          switchTheme: SwitchThemeData(
+        thumbColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return ThemeUtils.buildColorLighter(targetColor);
+            ;
+          }
+        }),
+        trackColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return targetColor.withOpacity(.5);
+          }
+        }),
+      )),
       home: const HomePage(),
     );
   }

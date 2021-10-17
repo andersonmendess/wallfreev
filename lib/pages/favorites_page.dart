@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:palette_generator/palette_generator.dart';
+import 'package:provider/src/provider.dart';
+import 'package:wallfreev/controllers/app_controller.dart';
 import 'package:wallfreev/utils/debouncer.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
@@ -16,7 +18,6 @@ class FavoritesPage extends StatefulWidget {
 
 class _FavoritesPageState extends State<FavoritesPage> {
   bool showBottomBar = true;
-  Color targetColor = Colors.yellow;
 
   final images = [];
 
@@ -32,7 +33,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   @override
   Widget build(BuildContext context) {
-    targetColor = Colors.grey;
+    Color targetColor = context.watch<AppController>().primaryColor;
 
     final colorWhited =
         Color.alphaBlend(Colors.white.withAlpha(190), targetColor);
