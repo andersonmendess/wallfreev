@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:wallfreev/components/image_component.dart';
 import 'package:wallfreev/controllers/app_controller.dart';
 import 'package:wallfreev/pages/categories_page.dart';
 import 'package:wallfreev/pages/home_page.dart';
