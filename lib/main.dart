@@ -61,25 +61,47 @@ class MyApp extends StatelessWidget {
         title: 'Flutter Demo',
         theme: ThemeData.dark().copyWith(
             scaffoldBackgroundColor: lighterColor,
-                fontSize: 27, fontWeight: FontWeight.w400, color: darkerColor),
-          ),
-          pageTransitionsTheme: const PageTransitionsTheme(
-            builders: {
-              TargetPlatform.android: ZoomPageTransitionsBuilder(),
-            },
-          ),
-          switchTheme: SwitchThemeData(
-            thumbColor: MaterialStateProperty.resolveWith((states) {
-              if (states.contains(MaterialState.selected)) {
-                return isDarkTheme ? targetColor : darkerColor;
-              }
-              return isDarkTheme ? lighterColor : darkerColor;
-            }),
-            trackColor: MaterialStateProperty.resolveWith((states) {
-              if (states.contains(MaterialState.selected)) {
-                return (isDarkTheme ? targetColor : darkerColor)
-                    .withOpacity(.3);
-              }
+            bottomNavigationBarTheme: BottomNavigationBarThemeData(
+                selectedItemColor: darkerColor,
+                backgroundColor: lighterColor,
+                unselectedItemColor: darkerColor.withOpacity(.4)),
+            appBarTheme: AppBarTheme(
+              iconTheme: IconThemeData(
+                color: darkerColor,
+              ),
+              backgroundColor: lighterColor,
+              foregroundColor: darkerColor,
+              titleTextStyle: TextStyle(
+                  fontSize: 27,
+                  fontWeight: FontWeight.w400,
+                  color: darkerColor),
+            ),
+            sliderTheme: SliderThemeData(
+              activeTrackColor: targetColor.withOpacity(.8),
+              thumbColor: targetColor,
+              inactiveTrackColor: targetColor.withOpacity(.24),
+              inactiveTickMarkColor: targetColor,
+            ),
+            pageTransitionsTheme: const PageTransitionsTheme(
+              builders: {
+                TargetPlatform.android: ZoomPageTransitionsBuilder(),
+              },
+            ),
+            switchTheme: SwitchThemeData(
+              thumbColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) {
+                  return isDarkTheme ? targetColor : darkerColor;
+                }
+                return isDarkTheme ? lighterColor : darkerColor;
+              }),
+              trackColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) {
+                  return (isDarkTheme ? targetColor : darkerColor)
+                      .withOpacity(.3);
+                }
+                return (isDarkTheme ? lighterColor : darkerColor)
+                    .withOpacity(.2);
+              }),
             )),
         home: const HomePage(),
       ),
