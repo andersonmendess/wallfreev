@@ -37,6 +37,8 @@ class _CategoryPageState extends State<CategoryPage> {
 
     return Scaffold(
       body: CustomScrollView(
+        // Keep 3 pages of wallpapers loaded
+        cacheExtent: MediaQuery.of(context).size.height * 3,
         slivers: [
           SliverAppBar(
             leading: Container(),

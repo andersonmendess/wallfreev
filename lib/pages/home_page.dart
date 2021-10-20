@@ -83,6 +83,8 @@ class HomePageContent extends StatelessWidget {
     final cacheService = context.watch<AppController>().cacheService;
 
     return CustomScrollView(
+      // Keep 3 pages of wallpapers loaded
+      cacheExtent: MediaQuery.of(context).size.height * 3,
       slivers: [
         SliverAppBar(
           actions: [
