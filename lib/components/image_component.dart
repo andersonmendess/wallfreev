@@ -30,6 +30,9 @@ class _ImageComponentState extends State<ImageComponent>
   void initState() {
     super.initState();
     widget.cacheService.download(widget.url).then((value) {
+      if (!mounted) {
+        return;
+      }
       image = value;
       setState(() {
         isReady = true;
