@@ -131,6 +131,10 @@ class _SettingsPageState extends State<SettingsPage> {
           padding: const EdgeInsets.all(12.0),
           sliver: SliverList(
             delegate: SliverChildListDelegate.fixed([
+              ListTile(
+                title: Text('Theme'),
+                textColor: targetColor,
+              ),
               SwitchListTile(
                 onChanged: (bool value) {
                   context.read<AppController>().changeTheme(value);
@@ -186,6 +190,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ),
               ListTile(
+                title: Text('Misc'),
+                textColor: targetColor,
+              ),
               ListTile(
                 title: Text(
                   "Loaded wallpapers limit",
@@ -221,6 +228,11 @@ class _SettingsPageState extends State<SettingsPage> {
                   ],
                 ),
               ),
+              ListTile(
+                title: Text('Info'),
+                textColor: targetColor,
+              ),
+              ListTile(
                 title: Text(
                   "Version",
                   style: TextStyle(
@@ -239,6 +251,14 @@ class _SettingsPageState extends State<SettingsPage> {
                           .withOpacity(.7)),
                 ),
               ),
+              AboutListTile(
+                  child: Text('About Wallfrev',
+                      style: TextStyle(
+                          fontSize: 22,
+                          color: Theme.of(context)
+                              .appBarTheme
+                              .titleTextStyle!
+                              .color))),
             ]),
           ),
         ),
