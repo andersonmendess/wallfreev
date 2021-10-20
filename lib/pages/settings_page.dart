@@ -99,6 +99,8 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     final targetColor = context.watch<AppController>().primaryColor;
     final useDarkTheme = context.watch<AppController>().useDarkTheme;
+    final maxLoadedWallpapers =
+        context.watch<AppController>().maxLoadedWallpapers;
 
     return Scaffold(
       body: CustomScrollView(slivers: [
@@ -184,6 +186,41 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ),
               ListTile(
+              ListTile(
+                title: Text(
+                  "Loaded wallpapers limit",
+                  style: TextStyle(
+                      fontSize: 22,
+                      color:
+                          Theme.of(context).appBarTheme.titleTextStyle!.color),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "The maximum amount of loaded wallpapers in the app.\n"
+                      "Lowering this may make the app feel more responsive",
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context)
+                              .appBarTheme
+                              .titleTextStyle!
+                              .color!
+                              .withOpacity(.7)),
+                    ),
+                    Slider(
+                      value: maxLoadedWallpapers.toDouble(),
+                      min: 3 * 9,
+                      max: 23 * 9,
+                      divisions: 10,
+                      label: maxLoadedWallpapers.toString(),
+                      onChanged: (v) => context
+                          .read<AppController>()
+                          .changeMaxLoadedWallpapers(v.toInt()),
+                    )
+                  ],
+                ),
+              ),
                 title: Text(
                   "Version",
                   style: TextStyle(
