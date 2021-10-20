@@ -1,13 +1,6 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:palette_generator/palette_generator.dart';
-import 'package:provider/src/provider.dart';
-import 'package:wallfreev/controllers/app_controller.dart';
-import 'package:wallfreev/utils/debouncer.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
+import 'package:wallfreev/data/wallpaper_data.dart';
+import 'package:wallfreev/pages/category_page.dart';
 
 class CategoriesPage extends StatefulWidget {
   const CategoriesPage({Key? key}) : super(key: key);
@@ -19,11 +12,20 @@ class CategoriesPage extends StatefulWidget {
 class _CategoriesPageState extends State<CategoriesPage> {
   bool showBottomBar = true;
 
-  final images = [];
+  Map<String, int> cat = {};
 
   @override
   void initState() {
     super.initState();
+
+    for (final element in wallpapers) {
+      if (cat.containsKey(element['collections'])) {
+        cat[element['collections']] = (cat[element['collections']]! + 1);
+      } else {
+        cat.addAll({element['collections']: 1});
+      }
+    }
+    print(cat);
   }
 
   @override
@@ -33,62 +35,71 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
   @override
   Widget build(BuildContext context) {
-    Color targetColor = context.watch<AppController>().primaryColor;
+    List<Widget> _buildCategories() {
+      List<Widget> itens = [];
 
-    final colorWhited =
-        Color.alphaBlend(Colors.white.withAlpha(190), targetColor);
+      cat.forEach((key, value) {
+        itens.add(ListTile(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => CategoryPage(
+                  name: key,
+                ),
+              ),
+            );
+          },
+          title: Text(
+            key,
+            style: TextStyle(
+                fontSize: 22,
+                color: Theme.of(context).appBarTheme.titleTextStyle!.color),
+          ),
+          subtitle: Text(
+            "$value wallpapers",
+            style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(context)
+                    .appBarTheme
+                    .titleTextStyle!
+                    .color!
+                    .withOpacity(.7)),
+          ),
+        ));
+      });
 
-    final blacked = Color.alphaBlend(Colors.black.withAlpha(210), targetColor);
+      return itens;
+    }
 
     return CustomScrollView(slivers: [
       SliverAppBar(
-        shadowColor: targetColor,
         flexibleSpace: FlexibleSpaceBar(
           title: Text(
             "Categories",
-            style: TextStyle(
-                fontSize: 27, fontWeight: FontWeight.w400, color: colorWhited),
+            style: Theme.of(context).appBarTheme.titleTextStyle,
           ),
           collapseMode: CollapseMode.pin,
           titlePadding: const EdgeInsets.only(left: 20, bottom: 12),
           background: Container(
             margin: const EdgeInsets.only(left: 180, bottom: 80),
-            child: Icon(Icons.category,
-                size: 210, color: colorWhited.withOpacity(.1)),
+            child: Icon(Icons.category_outlined,
+                size: 210,
+                color: Theme.of(context)
+                    .appBarTheme
+                    .titleTextStyle!
+                    .color!
+                    .withOpacity(.1)),
           ),
         ),
         expandedHeight: 230,
         pinned: true,
-        backgroundColor: blacked,
         elevation: 0,
       ),
       SliverPadding(
         padding: const EdgeInsets.all(12.0),
         sliver: SliverList(
           delegate: SliverChildListDelegate.fixed([
-            ListTile(
-              onTap: () {},
-              title: Text(
-                "Team Pixel",
-                style: TextStyle(fontSize: 22, color: colorWhited),
-              ),
-              subtitle: Text(
-                "43 wallpapers",
-                style:
-                    TextStyle(fontSize: 14, color: colorWhited.withOpacity(.7)),
-              ),
-            ),
-            ListTile(
-              title: Text(
-                "Shapes Theory",
-                style: TextStyle(fontSize: 22, color: colorWhited),
-              ),
-              subtitle: Text(
-                "11 wallpapers",
-                style:
-                    TextStyle(fontSize: 14, color: colorWhited.withOpacity(.7)),
-              ),
-            ),
+            ..._buildCategories(),
           ]),
         ),
       ),

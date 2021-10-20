@@ -39,24 +39,57 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    Color targetColor = context.watch<AppController>().primaryColor;
+    final targetColor = context.watch<AppController>().primaryColor;
+    final isDarkTheme = context.watch<AppController>().useDarkTheme;
+
+    late Color darkerColor;
+    late Color lighterColor;
+
+    if (isDarkTheme) {
+      darkerColor = ThemeUtils.buildColorLighter(targetColor);
+      lighterColor = ThemeUtils.buildColorDarker(targetColor);
+    } else {
+      darkerColor = ThemeUtils.buildColorDarker(targetColor);
+      lighterColor = ThemeUtils.buildColorLighter(targetColor, intensity: 220);
+    }
 
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData.dark().copyWith(
+          scaffoldBackgroundColor: lighterColor,
+          bottomNavigationBarTheme: BottomNavigationBarThemeData(
+              selectedItemColor: darkerColor,
+              backgroundColor: lighterColor,
+              unselectedItemColor: darkerColor.withOpacity(.4)),
+          appBarTheme: AppBarTheme(
+            iconTheme: IconThemeData(
+              color: darkerColor,
+            ),
+            backgroundColor: lighterColor,
+            foregroundColor: darkerColor,
+            titleTextStyle: TextStyle(
+                fontSize: 27, fontWeight: FontWeight.w400, color: darkerColor),
+          ),
+          pageTransitionsTheme: const PageTransitionsTheme(
+            builders: {
+              TargetPlatform.android: ZoomPageTransitionsBuilder(),
+            },
+          ),
           switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
-            return ThemeUtils.buildColorLighter(targetColor);
-            ;
-          }
-        }),
-        trackColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
-            return targetColor.withOpacity(.5);
-          }
-        }),
-      )),
+            thumbColor: MaterialStateProperty.resolveWith((states) {
+              if (states.contains(MaterialState.selected)) {
+                return isDarkTheme ? targetColor : darkerColor;
+              }
+              return isDarkTheme ? lighterColor : darkerColor;
+            }),
+            trackColor: MaterialStateProperty.resolveWith((states) {
+              if (states.contains(MaterialState.selected)) {
+                return (isDarkTheme ? targetColor : darkerColor)
+                    .withOpacity(.3);
+              }
+              return (isDarkTheme ? lighterColor : darkerColor).withOpacity(.2);
+            }),
+          )),
       home: const HomePage(),
     );
   }

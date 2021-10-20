@@ -1,14 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:palette_generator/palette_generator.dart';
 import 'package:provider/src/provider.dart';
 import 'package:wallfreev/controllers/app_controller.dart';
-import 'package:wallfreev/utils/debouncer.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:wallfreev/utils/theme_utils.dart';
-import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -32,7 +27,7 @@ class _SettingsPageState extends State<SettingsPage> {
     super.dispose();
   }
 
-  Widget _buildColorButton(Color color, Function cb) {
+  Widget _buildColorButton(String color, Function cb) {
     return InkWell(
       onTap: () {
         cb(color);
@@ -44,14 +39,14 @@ class _SettingsPageState extends State<SettingsPage> {
         height: 40,
         margin: const EdgeInsets.only(right: 10, bottom: 10),
         decoration: BoxDecoration(
-          color: color,
+          color: Color(int.parse(color)),
           borderRadius: BorderRadius.circular(30),
         ),
       ),
     );
   }
 
-  onChangeColor(Color color) {
+  onChangeColor(String color) {
     context.read<AppController>().changePrimaryColor(color);
   }
 
@@ -62,25 +57,24 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: ThemeUtils.buildColorDarker(targetColor),
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(32.0))),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           title: Text("Select the color",
-              style: TextStyle(
-                  fontSize: 28,
-                  color: ThemeUtils.buildColorLighter(targetColor),
-                  fontWeight: FontWeight.normal)),
+              style: Theme.of(context).appBarTheme.titleTextStyle),
           content: Container(
             height: 80,
             child: Wrap(
               children: [
-                _buildColorButton(const Color(0xFF5E9CAB), onChangeColor),
-                _buildColorButton(const Color(0xFFE3C139), onChangeColor),
-                _buildColorButton(const Color(0xFFA0336D), onChangeColor),
-                _buildColorButton(const Color(0xFFF4C3C6), onChangeColor),
-                _buildColorButton(const Color(0xFFADC965), onChangeColor),
-                _buildColorButton(const Color(0xFFC55152), onChangeColor),
-                _buildColorButton(const Color(0xFFFE6601), onChangeColor),
-                _buildColorButton(const Color(0xFF8E80C0), onChangeColor),
-                _buildColorButton(const Color(0xFFB4F8C8), onChangeColor),
+                _buildColorButton("0xFF5E9CAB", onChangeColor),
+                _buildColorButton("0xFFE3C139", onChangeColor),
+                _buildColorButton("0xFFA0336D", onChangeColor),
+                _buildColorButton("0xFFF4C3C6", onChangeColor),
+                _buildColorButton("0xFFADC965", onChangeColor),
+                _buildColorButton("0xFFC55152", onChangeColor),
+                _buildColorButton("0xFFFE6601", onChangeColor),
+                _buildColorButton("0xFF8E80C0", onChangeColor),
+                _buildColorButton("0xFFB4F8C8", onChangeColor),
               ],
             ),
           ),
@@ -88,7 +82,8 @@ class _SettingsPageState extends State<SettingsPage> {
             TextButton(
               child: Text(
                 "OK",
-                style: TextStyle(color: targetColor),
+                style: TextStyle(
+                    color: Theme.of(context).appBarTheme.titleTextStyle!.color),
               ),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -103,33 +98,31 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final targetColor = context.watch<AppController>().primaryColor;
+    final useDarkTheme = context.watch<AppController>().useDarkTheme;
 
     return Scaffold(
-      backgroundColor: ThemeUtils.buildColorDarker(targetColor),
       body: CustomScrollView(slivers: [
         SliverAppBar(
-          shadowColor: targetColor,
           flexibleSpace: FlexibleSpaceBar(
             title: Text(
               "Settings",
-              style: TextStyle(
-                  fontSize: 27,
-                  fontWeight: FontWeight.w400,
-                  color: ThemeUtils.buildColorLighter(targetColor)),
+              style: Theme.of(context).appBarTheme.titleTextStyle,
             ),
             collapseMode: CollapseMode.pin,
             titlePadding: const EdgeInsets.only(left: 20, bottom: 12),
             background: Container(
               margin: const EdgeInsets.only(left: 180, bottom: 80),
-              child: Icon(Icons.settings,
+              child: Icon(Icons.settings_outlined,
                   size: 210,
-                  color: ThemeUtils.buildColorLighter(targetColor)
+                  color: Theme.of(context)
+                      .appBarTheme
+                      .titleTextStyle!
+                      .color!
                       .withOpacity(.1)),
             ),
           ),
           expandedHeight: 230,
           pinned: true,
-          backgroundColor: ThemeUtils.buildColorDarker(targetColor),
           elevation: 0,
         ),
         SliverPadding(
@@ -137,19 +130,25 @@ class _SettingsPageState extends State<SettingsPage> {
           sliver: SliverList(
             delegate: SliverChildListDelegate.fixed([
               SwitchListTile(
-                onChanged: (bool value) {},
-                value: true,
+                onChanged: (bool value) {
+                  context.read<AppController>().changeTheme(value);
+                },
+                value: useDarkTheme,
                 title: Text(
                   "Dark theme",
                   style: TextStyle(
                       fontSize: 22,
-                      color: ThemeUtils.buildColorLighter(targetColor)),
+                      color:
+                          Theme.of(context).appBarTheme.titleTextStyle!.color),
                 ),
                 subtitle: Text(
                   "Change app theme",
                   style: TextStyle(
                       fontSize: 14,
-                      color: ThemeUtils.buildColorLighter(targetColor)
+                      color: Theme.of(context)
+                          .appBarTheme
+                          .titleTextStyle!
+                          .color!
                           .withOpacity(.7)),
                 ),
               ),
@@ -158,7 +157,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   "Colors",
                   style: TextStyle(
                       fontSize: 22,
-                      color: ThemeUtils.buildColorLighter(targetColor)),
+                      color:
+                          Theme.of(context).appBarTheme.titleTextStyle!.color!),
                 ),
                 trailing: Container(
                   width: 30,
@@ -176,7 +176,29 @@ class _SettingsPageState extends State<SettingsPage> {
                   "Change app color",
                   style: TextStyle(
                       fontSize: 14,
-                      color: ThemeUtils.buildColorLighter(targetColor)
+                      color: Theme.of(context)
+                          .appBarTheme
+                          .titleTextStyle!
+                          .color!
+                          .withOpacity(.7)),
+                ),
+              ),
+              ListTile(
+                title: Text(
+                  "Version",
+                  style: TextStyle(
+                      fontSize: 22,
+                      color:
+                          Theme.of(context).appBarTheme.titleTextStyle!.color),
+                ),
+                subtitle: Text(
+                  "1.0.0 (private beta)",
+                  style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context)
+                          .appBarTheme
+                          .titleTextStyle!
+                          .color!
                           .withOpacity(.7)),
                 ),
               ),
