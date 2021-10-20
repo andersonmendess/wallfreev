@@ -91,7 +91,12 @@ class ImageComponentLimiterScope {
   }
 
   void _maybeScheduleToDestroy() {
-    while (_active.length > maxActiveCount) {
+    if (_active.length <= maxActiveCount) {
+      return;
+    }
+    // Free half the images so that new images can be fetched
+    final targetActiveCount = maxActiveCount / 2;
+    while (_active.length > targetActiveCount) {
       _scheduleToDestroy(_active.removeFirst());
     }
   }
