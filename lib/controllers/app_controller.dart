@@ -19,6 +19,9 @@ class AppController with ChangeNotifier {
     sharedPref.read<String>(APP_THEME_COLOR_PREF).then((value) {
       if (value != null) changePrimaryColor(value, persist: false);
     });
+    sharedPref.read<bool>(APP_DARK_THEME_PREF).then((value) {
+      if (value != null) changeTheme(value, persist: false);
+    });
   }
 
   void changePrimaryColor(String newPrimary, {bool persist = true}) {
