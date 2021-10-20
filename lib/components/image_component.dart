@@ -24,6 +24,7 @@ class _ImageComponentState extends State<ImageComponent>
   bool isReady = false;
   CacheService? cacheService;
   late File image;
+  int? decodeWidth;
 
   @override
   void initState() {
@@ -59,17 +60,20 @@ class _ImageComponentState extends State<ImageComponent>
         ),
       );
     }
-    return Container(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: FileImage(image),
-          fit: BoxFit.cover,
-        ),
+    return LayoutBuilder(builder: (context, constraints) {
+      decodeWidth ??=
+          (constraints.biggest.height * MediaQuery.of(context).devicePixelRatio)
+              .toInt();
+      return Material(
         borderRadius: BorderRadius.circular(8),
-      ),
-    );
+        color: ThemeUtils.buildColorLighter(targetColor).withOpacity(.5),
+        clipBehavior: Clip.antiAlias,
+        child: Image.file(
+          image,
+          fit: BoxFit.cover,
+          cacheHeight: decodeWidth,
+        ),
+      );
+    });
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }
