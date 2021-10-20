@@ -41,6 +41,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final targetColor = context.watch<AppController>().primaryColor;
     final isDarkTheme = context.watch<AppController>().useDarkTheme;
+    final maxLoadedWallpapers =
+        context.watch<AppController>().maxLoadedWallpapers;
 
     late Color darkerColor;
     late Color lighterColor;
@@ -53,21 +55,12 @@ class MyApp extends StatelessWidget {
       lighterColor = ThemeUtils.buildColorLighter(targetColor, intensity: 220);
     }
 
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData.dark().copyWith(
-          scaffoldBackgroundColor: lighterColor,
-          bottomNavigationBarTheme: BottomNavigationBarThemeData(
-              selectedItemColor: darkerColor,
-              backgroundColor: lighterColor,
-              unselectedItemColor: darkerColor.withOpacity(.4)),
-          appBarTheme: AppBarTheme(
-            iconTheme: IconThemeData(
-              color: darkerColor,
-            ),
-            backgroundColor: lighterColor,
-            foregroundColor: darkerColor,
-            titleTextStyle: TextStyle(
+    return InheritedImageComponentLimiterScope(
+      scope: ImageComponentLimiterScope(maxLoadedWallpapers),
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData.dark().copyWith(
+            scaffoldBackgroundColor: lighterColor,
                 fontSize: 27, fontWeight: FontWeight.w400, color: darkerColor),
           ),
           pageTransitionsTheme: const PageTransitionsTheme(
@@ -87,10 +80,9 @@ class MyApp extends StatelessWidget {
                 return (isDarkTheme ? targetColor : darkerColor)
                     .withOpacity(.3);
               }
-              return (isDarkTheme ? lighterColor : darkerColor).withOpacity(.2);
-            }),
-          )),
-      home: const HomePage(),
+            )),
+        home: const HomePage(),
+      ),
     );
   }
 }
