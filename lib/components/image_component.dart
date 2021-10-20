@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,89 @@ import 'package:wallfreev/controllers/app_controller.dart';
 import 'package:wallfreev/services/cache_service.dart';
 import 'package:wallfreev/utils/theme_utils.dart';
 
+enum _ImageComponentLifecycleState {
+  registered,
+  active,
+  scheduledToDestroy,
+}
+
+class ImageComponentLimiterScope {
+  ImageComponentLimiterScope(this.maxActiveCount);
+  final int maxActiveCount;
+
+  final Queue<_ImageComponentState> _active = Queue();
+  final Map<_ImageComponentState, _ImageComponentLifecycleState> _registered =
+      {};
+
+  /// An [ImageComponent] was mounted.
+  void register(_ImageComponentState self) {
+    if (_registered.containsKey(self)) {
+      throw StateError('register called more than once!');
+    }
+    _registered[self] = _ImageComponentLifecycleState.registered;
+
+    _maybeScheduleToDestroy();
+  }
+
+  /// An [ImageComponent] loaded an image.
+  void setActive(_ImageComponentState self) {
+    final currentState = _registered[self];
+    if (currentState != _ImageComponentLifecycleState.registered) {
+      final String beforeOrAfter;
+      switch (currentState) {
+        case _ImageComponentLifecycleState.registered:
+          beforeOrAfter = '';
+          break;
+        case _ImageComponentLifecycleState.active:
+        case _ImageComponentLifecycleState.scheduledToDestroy:
+          beforeOrAfter = 'after';
+          break;
+        case null:
+          beforeOrAfter = 'before';
+      }
+      final String stateTransitionMethod;
+      switch (currentState) {
+        case _ImageComponentLifecycleState.registered:
+          stateTransitionMethod = '';
+          break;
+        case _ImageComponentLifecycleState.active:
+          stateTransitionMethod = 'setActive';
+          break;
+        case _ImageComponentLifecycleState.scheduledToDestroy:
+          stateTransitionMethod = '_scheduleToDestroy';
+          break;
+        case null:
+          stateTransitionMethod = 'register';
+      }
+      throw StateError(
+        'Cannot call setActive $beforeOrAfter calling $stateTransitionMethod',
+      );
+    }
+    _registered[self] = _ImageComponentLifecycleState.active;
+    _active.add(self);
+
+    _maybeScheduleToDestroy();
+  }
+
+  /// An [ImageComponent] was disposed.
+  void unregister(_ImageComponentState self) {
+    _active.remove(self);
+    _registered.remove(self);
+
+    _maybeScheduleToDestroy();
+  }
+
+  void _scheduleToDestroy(_ImageComponentState state) {
+    _registered[state] = _ImageComponentLifecycleState.scheduledToDestroy;
+    state.scheduleToDestroy();
+  }
+
+  void _maybeScheduleToDestroy() {
+    while (_active.length > maxActiveCount) {
+      _scheduleToDestroy(_active.removeFirst());
+    }
+  }
+}
 class ImageComponent extends StatefulWidget {
   final String url;
   final CacheService cacheService;
@@ -25,6 +109,7 @@ class _ImageComponentState extends State<ImageComponent>
   CacheService? cacheService;
   late File image;
   int? decodeWidth;
+  ImageComponentLimiterScope? _scope;
 
   @override
   void initState() {
@@ -34,6 +119,9 @@ class _ImageComponentState extends State<ImageComponent>
         return;
       }
       image = value;
+      // The component is now useful, so it may be kept alive
+      wantKeepAlive = true;
+      updateKeepAlive();
       setState(() {
         isReady = true;
       });
@@ -44,6 +132,33 @@ class _ImageComponentState extends State<ImageComponent>
     });
   }
 
+
+  @override
+  bool wantKeepAlive = false;
+
+  void unscheduleToDestroy() {
+    if (wantKeepAlive) {
+      return;
+    }
+    if (!isReady) {
+      return;
+    }
+
+    wantKeepAlive = true;
+    updateKeepAlive();
+  }
+
+  void scheduleToDestroy() {
+    wantKeepAlive = false;
+    updateKeepAlive();
+  }
+
+  @override
+  void dispose() {
+    _scope?.unregister(this);
+    _scope = null;
+    super.dispose();
+  }
   @override
   // ignore: must_call_super
   Widget build(BuildContext context) {
