@@ -18,6 +18,11 @@ class ImageComponentLimiterScope {
   ImageComponentLimiterScope(this.maxActiveCount);
   final int maxActiveCount;
 
+  static ImageComponentLimiterScope of(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<
+          InheritedImageComponentLimiterScope>()!
+      .scope;
+
   final Queue<_ImageComponentState> _active = Queue();
   final Map<_ImageComponentState, _ImageComponentLifecycleState> _registered =
       {};
@@ -91,6 +96,7 @@ class ImageComponentLimiterScope {
     }
   }
 }
+
 class ImageComponent extends StatefulWidget {
   final String url;
   final CacheService cacheService;
@@ -101,6 +107,20 @@ class ImageComponent extends StatefulWidget {
 
   @override
   _ImageComponentState createState() => _ImageComponentState();
+}
+
+class InheritedImageComponentLimiterScope extends InheritedWidget {
+  final ImageComponentLimiterScope scope;
+
+  const InheritedImageComponentLimiterScope({
+    Key? key,
+    required this.scope,
+    required Widget child,
+  }) : super(key: key, child: child);
+
+  @override
+  bool updateShouldNotify(InheritedImageComponentLimiterScope oldWidget) =>
+      oldWidget.scope != scope;
 }
 
 class _ImageComponentState extends State<ImageComponent>
@@ -118,6 +138,7 @@ class _ImageComponentState extends State<ImageComponent>
       if (!mounted) {
         return;
       }
+      _scope?.setActive(this);
       image = value;
       // The component is now useful, so it may be kept alive
       wantKeepAlive = true;
@@ -132,6 +153,23 @@ class _ImageComponentState extends State<ImageComponent>
     });
   }
 
+  void _maybeRegisterScope() {
+    final scope = ImageComponentLimiterScope.of(context);
+    if (_scope != scope) {
+      _scope?.unregister(this);
+      unscheduleToDestroy();
+      _scope = scope;
+    }
+
+    scope.register(this);
+    if (isReady) {
+      // The image was fetched before registering the scope. May only be
+      // possible if the cacheService future was called before the next
+      // microtask, which would happen in the next frame, after the tree is
+      // built.
+      scope.setActive(this);
+    }
+  }
 
   @override
   bool wantKeepAlive = false;
@@ -159,6 +197,13 @@ class _ImageComponentState extends State<ImageComponent>
     _scope = null;
     super.dispose();
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _maybeRegisterScope();
+  }
+
   @override
   // ignore: must_call_super
   Widget build(BuildContext context) {
